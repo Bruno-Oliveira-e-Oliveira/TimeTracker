@@ -25,5 +25,14 @@ class MainActivity : AppCompatActivity() {
         ).build()
 
 
+        binding.button.setOnClickListener {
+
+        }
+
+        binding.button2.setOnClickListener {
+
+        }
+
+
     }
 }
