@@ -5,16 +5,19 @@ import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Update
 
-@Database(entities = [User::class, Tag::class], version = 1)
+@Database(entities = [User::class, Tag::class, Task::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun tagDao(): TagDao
+    abstract fun taskDao(): TaskDao
 }
 
 
@@ -31,6 +34,15 @@ data class Tag(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "icon") val icon: String?,
     @ColumnInfo(name = "colorTheme") val colorTheme: String?
+)
+
+@Entity(foreignKeys = [ForeignKey(entity = Tag::class, parentColumns = ["id"], childColumns = ["tagId"], onDelete = CASCADE)])
+data class Task(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "tagId") val tagId: Int,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "description") val description: String?,
+    @ColumnInfo(name = "active") val active: Boolean
 )
 
 
@@ -68,4 +80,25 @@ interface TagDao {
 
     @Delete
     fun delete(tag: Tag)
+}
+
+@Dao
+interface TaskDao {
+    @Query("SELECT * FROM task")
+    fun getAll(): List<Task>
+
+    @Query("SELECT * FROM task WHERE id = :id")
+    fun getById(id: Int): Task
+
+    @Query("SELECT * FROM task WHERE tagId = :tagId")
+    fun getByTagId(tagId: Int): List<Task>
+
+    @Insert
+    fun insertAll(vararg tasks: Task)
+
+    @Update
+    fun updateTags(vararg tasks: Task): Int
+
+    @Delete
+    fun delete(task: Task)
 }

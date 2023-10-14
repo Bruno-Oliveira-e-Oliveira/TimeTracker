@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
             applicationContext, AppDatabase::class.java, "database"
         ).build()
 
-
         binding.button.setOnClickListener {
 
         }
