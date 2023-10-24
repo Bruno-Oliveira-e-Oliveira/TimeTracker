@@ -11,15 +11,20 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import androidx.room.Update
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
-@Database(entities = [User::class, Tag::class, Task::class], version = 1)
+@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun tagDao(): TagDao
     abstract fun taskDao(): TaskDao
+    abstract fun timeLoggerDao(): TimeLoggerDao
 }
-
 
 @Entity
 data class User(
@@ -43,6 +48,15 @@ data class Task(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "description") val description: String?,
     @ColumnInfo(name = "active") val active: Boolean
+)
+
+@Entity(foreignKeys = [ForeignKey(entity = Task::class, parentColumns = ["id"], childColumns = ["taskId"], onDelete = CASCADE)])
+data class TimeLogger(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "taskId") val taskId: Int,
+    @ColumnInfo(name = "dateCreated") val dateCreated: OffsetDateTime? = null,
+    @ColumnInfo(name = "secondsCounted") val secondsCounted: Int = 0,
+    @ColumnInfo(name = "timerType") val timerType: String
 )
 
 
@@ -101,4 +115,42 @@ interface TaskDao {
 
     @Delete
     fun delete(task: Task)
+}
+
+@Dao
+interface TimeLoggerDao {
+    @Query("SELECT * FROM timelogger")
+    fun getAll(): List<TimeLogger>
+
+    @Query("SELECT * FROM timelogger WHERE id = :id")
+    fun getById(id: Int): TimeLogger
+
+    @Query("SELECT * FROM timelogger WHERE taskId = :taskId")
+    fun getByTaskId(taskId: Int): List<TimeLogger>
+
+    @Insert
+    fun insertAll(vararg timeLoggers: TimeLogger)
+
+    @Update
+    fun updateTags(vararg timeLoggers: TimeLogger): Int
+
+    @Delete
+    fun delete(timeLogger: TimeLogger)
+}
+
+
+class Converters {
+    private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+
+    @TypeConverter
+    fun fromTimestamp(value: String?): OffsetDateTime? {
+        return value?.let {
+            return formatter.parse(value, OffsetDateTime::from)
+        }
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(date: OffsetDateTime?): String? {
+        return date?.format(formatter)
+    }
 }
