@@ -17,13 +17,14 @@ import androidx.room.Update
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class], version = 1)
+@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class, Pomodoro::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun tagDao(): TagDao
     abstract fun taskDao(): TaskDao
     abstract fun timeLoggerDao(): TimeLoggerDao
+    abstract fun pomodoroDao(): PomodoroDao
 }
 
 @Entity
@@ -59,6 +60,12 @@ data class TimeLogger(
     @ColumnInfo(name = "timerType") val timerType: String
 )
 
+@Entity
+data class Pomodoro(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "name") val name: String
+)
+
 
 @Dao
 interface UserDao {
@@ -72,7 +79,7 @@ interface UserDao {
     fun insertAll(vararg users: User)
 
     @Update
-    fun updateUsers(vararg users: User): Int
+    fun update(vararg users: User): Int
 
     @Delete
     fun delete(user: User)
@@ -90,7 +97,7 @@ interface TagDao {
     fun insertAll(vararg tags: Tag)
 
     @Update
-    fun updateTags(vararg tags: Tag): Int
+    fun update(vararg tags: Tag): Int
 
     @Delete
     fun delete(tag: Tag)
@@ -111,7 +118,7 @@ interface TaskDao {
     fun insertAll(vararg tasks: Task)
 
     @Update
-    fun updateTags(vararg tasks: Task): Int
+    fun update(vararg tasks: Task): Int
 
     @Delete
     fun delete(task: Task)
@@ -132,12 +139,29 @@ interface TimeLoggerDao {
     fun insertAll(vararg timeLoggers: TimeLogger)
 
     @Update
-    fun updateTags(vararg timeLoggers: TimeLogger): Int
+    fun update(vararg timeLoggers: TimeLogger): Int
 
     @Delete
     fun delete(timeLogger: TimeLogger)
 }
 
+@Dao
+interface PomodoroDao {
+    @Query("SELECT * FROM pomodoro")
+    fun getAll(): List<Pomodoro>
+
+    @Query("SELECT * FROM pomodoro WHERE id = :id")
+    fun getById(id: Int): Pomodoro
+
+    @Insert
+    fun insertAll(vararg pomodoros: Pomodoro)
+
+    @Update
+    fun update(vararg pomodoros: Pomodoro): Int
+
+    @Delete
+    fun delete(pomodoro: Pomodoro)
+}
 
 class Converters {
     private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
