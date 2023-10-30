@@ -17,7 +17,7 @@ import androidx.room.Update
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class, Pomodoro::class], version = 1)
+@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class, Pomodoro::class, PomodoroTimerModel::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -25,6 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun timeLoggerDao(): TimeLoggerDao
     abstract fun pomodoroDao(): PomodoroDao
+    abstract fun pomodoroTimerModelDao(): PomodoroTimerModelDao
 }
 
 @Entity
@@ -66,6 +67,13 @@ data class Pomodoro(
     @ColumnInfo(name = "name") val name: String
 )
 
+@Entity
+data class PomodoroTimerModel(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "type") val type: String,
+    @ColumnInfo(name = "timeInSeconds") val timeInSeconds: Int
+)
 
 @Dao
 interface UserDao {
@@ -162,6 +170,25 @@ interface PomodoroDao {
     @Delete
     fun delete(pomodoro: Pomodoro)
 }
+
+@Dao
+interface PomodoroTimerModelDao {
+    @Query("SELECT * FROM pomodorotimermodel")
+    fun getAll(): List<PomodoroTimerModel>
+
+    @Query("SELECT * FROM pomodorotimermodel WHERE id = :id")
+    fun getById(id: Int): PomodoroTimerModel
+
+    @Insert
+    fun insertAll(vararg pomodoroModels: PomodoroTimerModel)
+
+    @Update
+    fun update(vararg pomodoroModels: PomodoroTimerModel): Int
+
+    @Delete
+    fun delete(pomodoroModel: PomodoroTimerModel)
+}
+
 
 class Converters {
     private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
