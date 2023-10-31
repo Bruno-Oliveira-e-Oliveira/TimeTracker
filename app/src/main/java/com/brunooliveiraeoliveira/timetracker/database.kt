@@ -17,7 +17,7 @@ import androidx.room.Update
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class, Pomodoro::class, PomodoroTimerModel::class], version = 1)
+@Database(entities = [User::class, Tag::class, Task::class, TimeLogger::class, Pomodoro::class, PomodoroTimerModel::class, PomodoroTimer::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -26,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun timeLoggerDao(): TimeLoggerDao
     abstract fun pomodoroDao(): PomodoroDao
     abstract fun pomodoroTimerModelDao(): PomodoroTimerModelDao
+    abstract fun pomodoroTimerDao(): PomodoroTimerDao
 }
 
 @Entity
@@ -73,6 +74,17 @@ data class PomodoroTimerModel(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "type") val type: String,
     @ColumnInfo(name = "timeInSeconds") val timeInSeconds: Int
+)
+
+@Entity(foreignKeys = [
+    ForeignKey(entity = Pomodoro::class, parentColumns = ["id"], childColumns = ["pomodoroId"], onDelete = CASCADE),
+    ForeignKey(entity = PomodoroTimerModel::class, parentColumns = ["id"], childColumns = ["pomodoroTimerModelId"], onDelete = CASCADE)
+])
+data class PomodoroTimer(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "pomodoroId") val pomodoroId: Int,
+    @ColumnInfo(name = "pomodoroTimerModelId") val pomodoroTimerModelId: Int,
+    @ColumnInfo(name = "sequential") val sequential: Int = 0
 )
 
 @Dao
@@ -187,6 +199,27 @@ interface PomodoroTimerModelDao {
 
     @Delete
     fun delete(pomodoroModel: PomodoroTimerModel)
+}
+
+@Dao
+interface PomodoroTimerDao {
+    @Query("SELECT * FROM pomodoroTimer")
+    fun getAll(): List<PomodoroTimer>
+
+    @Query("SELECT * FROM pomodoroTimer WHERE id = :id")
+    fun getById(id: Int): PomodoroTimer
+
+    @Query("SELECT * FROM pomodoroTimer WHERE pomodoroId = :pomodoroId")
+    fun getByPomodoroId(pomodoroId: Int): List<PomodoroTimer>
+
+    @Insert
+    fun insertAll(vararg pomodoroTimers: PomodoroTimer)
+
+    @Update
+    fun update(vararg pomodoroTimers: PomodoroTimer): Int
+
+    @Delete
+    fun delete(pomodoroTimer: PomodoroTimer)
 }
 
 
