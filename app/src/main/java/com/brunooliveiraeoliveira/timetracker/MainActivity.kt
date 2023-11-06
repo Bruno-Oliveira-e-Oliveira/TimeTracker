@@ -2,14 +2,9 @@ package com.brunooliveiraeoliveira.timetracker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.room.Room
+import com.brunooliveiraeoliveira.timetracker.database.AppDatabase
 import com.brunooliveiraeoliveira.timetracker.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.sql.Time
-import java.time.OffsetDateTime
 
 class MainActivity : AppCompatActivity() {
 
