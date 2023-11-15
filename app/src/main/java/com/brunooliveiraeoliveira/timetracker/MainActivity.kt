@@ -2,6 +2,8 @@ package com.brunooliveiraeoliveira.timetracker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.room.Room
 import com.brunooliveiraeoliveira.timetracker.database.AppDatabase
 import com.brunooliveiraeoliveira.timetracker.databinding.ActivityMainBinding
@@ -21,14 +23,9 @@ class MainActivity : AppCompatActivity() {
             applicationContext, AppDatabase::class.java, "database"
         ).build()
 
-        binding.button.setOnClickListener {
-
-        }
-
-        binding.button2.setOnClickListener {
-
-        }
-
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        navController.navigate(R.id.pomodoroTimerFragment)
 
     }
 }
